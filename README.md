@@ -187,15 +187,6 @@ Content-Type: application/json
 GET /api/v1/auth/me
 ```
 
-#### Update User Profile
-```http
-PUT /api/v1/auth/profile
-Content-Type: application/json
-
-{
-  "name": "Updated Name"
-}
-```
 
 ### Notes Endpoints
 
