@@ -241,7 +241,25 @@ DELETE /api/v1/notes/{note_id}
 
 #### Restore Note
 ```http
-POST /api/v1/notes/{note_id}/restore
+PUT /api/v1/notes/{note_id}/restore
+```
+
+Restores a soft-deleted note by setting `is_deleted` to `false`. The note will appear in the main notes list again.
+
+**Response:**
+```json
+{
+  "id": "note_id",
+  "title": "Note Title",
+  "content": "Note content",
+  "is_deleted": false,
+  "is_pinned": false,
+  "user_id": "user_id",
+  "created_at": "2025-01-07T20:00:00Z",
+  "updated_at": "2025-01-07T20:00:00Z",
+  "format": "text",
+  "color": "primary"
+}
 ```
 
 ### AI Features Endpoints
@@ -345,6 +363,11 @@ Content-Type: application/json
   "color": "primary"
 }
 ```
+
+**Note:** 
+- `is_deleted: false` - Note is active and visible in main list
+- `is_deleted: true` - Note is soft-deleted and appears in trash
+- Use the restore endpoint to change `is_deleted` from `true` to `false`
 
 ### Note Create Model
 ```json

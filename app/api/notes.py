@@ -183,5 +183,36 @@ async def delete_note(
         )
 
 
-# Note: Restore functionality removed to align with case study requirements
-# Case study only requires: GET /notes, POST /notes, PUT /notes/{id}, DELETE /notes/{id}
+@router.put("/{note_id}/restore", response_model=Note)
+async def restore_note(
+    note_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Restore a soft-deleted note.
+    
+    Args:
+        note_id: ID of the note to restore
+        current_user: Current authenticated user
+        
+    Returns:
+        Note: Restored note
+        
+    Raises:
+        HTTPException: If note is not found or doesn't belong to user
+    """
+    try:
+        note = await note_service.restore_note(note_id, current_user["uid"])
+        if not note:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Note not found"
+            )
+        return note
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to restore note"
+        )

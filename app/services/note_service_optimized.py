@@ -360,8 +360,61 @@ class OptimizedNoteService:
                 detail=f"Unable to delete note. Please try again later. Error: {str(e)}"
             )
     
-    # Note: restore_note method removed to align with case study requirements
-    # Case study only requires: GET /notes, POST /notes, PUT /notes/{id}, DELETE /notes/{id}
+    async def restore_note(self, note_id: str, user_id: str) -> Optional[Note]:
+        """
+        Restore a soft-deleted note by setting is_deleted to False.
+        
+        Args:
+            note_id: ID of the note to restore
+            user_id: ID of the user who owns the note
+            
+        Returns:
+            Note: Restored note if successful, None if not found
+            
+        Raises:
+            HTTPException: If note is not found or doesn't belong to user
+        """
+        try:
+            # Get the existing note
+            existing_note = await firestore_service.get_subcollection_document(
+                collection_name="users",
+                document_id=user_id,
+                subcollection_name="notes",
+                subdocument_id=note_id
+            )
+            
+            if not existing_note:
+                return None
+                
+            # Check if note belongs to user
+            if existing_note.get("user_id") != user_id:
+                return None
+            
+            # Update the note to restore it (set is_deleted to False)
+            updated_note_data = {
+                **existing_note,
+                "is_deleted": False,
+                "updated_at": datetime.utcnow().isoformat()
+            }
+            
+            # Update the note in Firestore
+            await firestore_service.update_subcollection_document(
+                collection_name="users",
+                document_id=user_id,
+                subcollection_name="notes",
+                subdocument_id=note_id,
+                data=updated_note_data
+            )
+            
+            # Return the updated note
+            return Note(**updated_note_data)
+            
+        except Exception as e:
+            print(f"🔴 [SERVICE] Restore note error: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Unable to restore note. Please try again later. Error: {str(e)}"
+            )
     
     async def search_notes(
         self,
